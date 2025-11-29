@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forklift Master - GitHub Edition</title>
+    <title>Forklift Master - Fixed CSV</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
@@ -13,13 +13,13 @@
     
     <style>
         body { font-family: 'Rubik', sans-serif; background: #f8fafc; color: #1e293b; min-height: 100vh; }
-        .forklift-icon { fill: currentColor; display: inline-block; width: 1.4em; height: 1.4em; vertical-align: middle; }
         .tab-btn { padding: 12px 24px; font-weight: 700; color: #64748b; background: transparent; border: none; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s ease; white-space: nowrap; }
         .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; background-color: white; border-radius: 8px 8px 0 0; }
         .tab-content { display: none; animation: fadeIn 0.4s ease-out; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
+        /* Status Colors */
         tr.row-status-urgent { background-color: #fef2f2 !important; border-right: 4px solid #ef4444 !important; }
         tr.row-status-warning { background-color: #fffbeb !important; border-right: 4px solid #facc15 !important; }
         tr.row-status-ok { background-color: #ffffff !important; border-right: 4px solid #10b981 !important; }
@@ -28,6 +28,7 @@
         .badge-danger { background-color: #ef4444; color: white; border: 1px solid #dc2626; }
         .badge-warning { background-color: #fef08a; color: #854d0e; border: 1px solid #facc15; }
         .badge-success { background-color: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .badge-error { background-color: #f3f4f6; color: #9ca3af; border: 1px solid #e5e7eb; }
         .cal-btn { font-size: 0.7rem; margin-top: 4px; padding: 2px 6px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
         .days-tag { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
     </style>
@@ -38,25 +39,24 @@
         <div class="container mx-auto px-4 h-20 flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg p-2">
-                    <svg class="forklift-icon w-full h-full" viewBox="0 0 24 24"><path d="M4 22V2h2v9h4l2-5h5l2 5h1v-2h2v2h1v2h-1v5h-1v2h-1v-2H13c-1.1 0-2 .9-2 2H9v-2H6v2H4zm5-7h8v-3h-2.5l-1-2.5h-3l-1 2.5H9v3z"/></svg>
+                    <i class="fas fa-truck-loading fa-lg"></i>
                 </div>
                 <div>
                     <h1 class="text-2xl font-black tracking-tight">FORKLIFT <span class="text-blue-400">MASTER</span></h1>
-                    <p class="text-xs text-slate-400">GitHub Edition (Web)</p>
+                    <p class="text-xs text-slate-400">Fixed CSV Import</p>
                 </div>
             </div>
             <div class="hidden md:flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
-                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                <span class="text-xs font-bold text-slate-300">אונליין</span>
+                <span class="text-xs font-bold text-slate-300">גרסה מתוקנת</span>
             </div>
         </div>
     </header>
 
     <div class="container mx-auto px-4 py-8 max-w-7xl">
         <div class="flex gap-2 border-b border-slate-300/50 mb-6 overflow-x-auto">
-            <button class="tab-btn active" onclick="switchTab('dashboard')"><i class="fas fa-chart-pie"></i> דשבורד</button>
-            <button class="tab-btn" onclick="switchTab('fleet')"><i class="fas fa-list"></i> טבלת מלגזות</button>
-            <button class="tab-btn" onclick="switchTab('settings')"><i class="fas fa-cog"></i> הגדרות</button>
+            <button class="tab-btn active" onclick="switchTab('dashboard')">דשבורד</button>
+            <button class="tab-btn" onclick="switchTab('fleet')">טבלת מלגזות</button>
+            <button class="tab-btn" onclick="switchTab('settings')">הגדרות</button>
         </div>
 
         <div id="tab-dashboard" class="tab-content active">
@@ -77,15 +77,10 @@
                 <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-wrap justify-between items-center gap-4">
                     <h2 class="text-lg font-bold text-slate-800">רשימת ציוד</h2>
                     <div class="flex flex-wrap gap-2 items-center">
-                        <input type="text" id="searchBox" onkeyup="renderTable()" placeholder="חיפוש חופשי..." class="px-3 py-2 border rounded-lg text-sm w-40 focus:ring-2 focus:ring-blue-500 outline-none">
-                        <select id="statusFilter" onchange="renderTable()" class="px-3 py-2 border rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none bg-white cursor-pointer">
-                            <option value="all">הכל</option>
-                            <option value="urgent">🔴 פג תוקף</option>
-                            <option value="warning">🟠 מתקרב</option>
-                            <option value="ok">🟢 תקין</option>
-                        </select>
+                        <input type="text" id="searchBox" onkeyup="renderTable()" placeholder="חיפוש חופשי..." class="px-3 py-2 border rounded-lg text-sm w-40 outline-none">
+                        <select id="statusFilter" onchange="renderTable()" class="px-3 py-2 border rounded-lg text-sm bg-white cursor-pointer"><option value="all">הכל</option><option value="urgent">🔴 פג תוקף</option><option value="warning">🟠 מתקרב</option><option value="ok">🟢 תקין</option></select>
                         <label class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-bold cursor-pointer flex items-center gap-2 shadow-sm transition">
-                            <i class="fas fa-file-csv"></i> יבוא CSV
+                            <i class="fas fa-file-csv"></i> טען CSV מתוקן
                             <input type="file" id="csvImportInput" class="hidden" accept=".csv" onchange="importCSV(this)">
                         </label>
                         <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-sm transition"><i class="fas fa-plus"></i> חדש</button>
@@ -95,12 +90,12 @@
                     <table class="w-full text-right border-collapse">
                         <thead>
                             <tr class="bg-slate-100 uppercase border-b border-slate-200 text-xs text-slate-500">
-                                <th class="p-4">מספר כלי</th><th class="p-4">מספר רישוי</th><th class="p-4">תוקף ביטוח</th><th class="p-4">תוקף תסקיר</th><th class="p-4">תוקף רישוי</th><th class="p-4 text-center">פעולות</th>
+                                <th class="p-4">מספר מלגזה</th><th class="p-4">מספר רישוי</th><th class="p-4">תוקף ביטוח</th><th class="p-4">תוקף תסקיר</th><th class="p-4">תוקף רישוי</th><th class="p-4 text-center">פעולות</th>
                             </tr>
                         </thead>
                         <tbody id="fleetTableBody"></tbody>
                     </table>
-                    <div id="tableEmptyState" class="hidden text-center py-12"><p class="text-slate-400 text-lg">אין נתונים. טען קובץ או הוסף ידנית.</p></div>
+                    <div id="tableEmptyState" class="hidden text-center py-12"><p class="text-slate-400 text-lg">אין נתונים. טען CSV.</p></div>
                 </div>
                 <div class="p-3 bg-slate-50 border-t text-xs text-slate-500 font-bold" id="rowsCount"></div>
             </div>
@@ -110,14 +105,11 @@
             <div class="max-w-xl mx-auto space-y-6">
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                     <h3 class="font-bold text-lg mb-4">ניהול נתונים</h3>
-                    <div class="bg-blue-50 p-4 rounded-lg text-sm text-blue-800 mb-6 border border-blue-200">
-                        <i class="fas fa-info-circle"></i> הנתונים נשמרים בדפדפן. העבר נתונים בין מכשירים באמצעות גיבוי.
-                    </div>
                     <div class="flex gap-2">
-                        <button onclick="downloadJSON()" class="flex-1 bg-slate-800 text-white py-3 rounded-lg font-bold hover:bg-slate-700"><i class="fas fa-download"></i> הורד גיבוי</button>
-                        <button onclick="document.getElementById('jsonInput').click()" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700"><i class="fas fa-upload"></i> טען גיבוי</button>
+                        <button onclick="downloadJSON()" class="flex-1 bg-slate-800 text-white py-3 rounded-lg font-bold"><i class="fas fa-download"></i> הורד גיבוי</button>
+                        <button onclick="document.getElementById('jsonInput').click()" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold"><i class="fas fa-upload"></i> טען גיבוי</button>
                         <input type="file" id="jsonInput" class="hidden" accept=".json" onchange="loadJSON(this)">
-                        <button onclick="clearData()" class="flex-1 bg-red-100 text-red-600 py-3 rounded-lg font-bold hover:bg-red-200"><i class="fas fa-trash"></i> אפס הכל</button>
+                        <button onclick="clearData()" class="flex-1 bg-red-100 text-red-600 py-3 rounded-lg font-bold"><i class="fas fa-trash"></i> איפוס</button>
                     </div>
                 </div>
             </div>
@@ -130,13 +122,13 @@
             <form id="editForm" class="p-6 space-y-4">
                 <input type="hidden" id="editId">
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-bold text-slate-500">מספר כלי</label><input type="text" id="inpNum" class="w-full border p-2 rounded" required></div>
+                    <div><label class="block text-xs font-bold text-slate-500">מספר מלגזה</label><input type="text" id="inpNum" class="w-full border p-2 rounded" required></div>
                     <div><label class="block text-xs font-bold text-blue-600">רישוי</label><input type="text" id="inpLicense" class="w-full border p-2 rounded"></div>
                 </div>
                 <div class="grid grid-cols-3 gap-2">
                     <div><label class="block text-xs font-bold text-slate-500">ביטוח</label><input type="date" id="inpIns" class="w-full border p-2 rounded"></div>
                     <div><label class="block text-xs font-bold text-slate-500">תסקיר</label><input type="date" id="inpSafety" class="w-full border p-2 rounded"></div>
-                    <div><label class="block text-xs font-bold text-slate-500">טסט</label><input type="date" id="inpLic" class="w-full border p-2 rounded"></div>
+                    <div><label class="block text-xs font-bold text-slate-500">רישוי</label><input type="date" id="inpLic" class="w-full border p-2 rounded"></div>
                 </div>
                 <div class="pt-4 flex justify-end gap-2">
                     <button type="button" onclick="closeModal()" class="px-4 py-2 text-slate-600 font-bold hover:bg-slate-100 rounded-lg">ביטול</button>
@@ -148,7 +140,7 @@
 
     <script>
         let forklifts = [];
-        const STORAGE_KEY = 'forklift_gh_data';
+        const STORAGE_KEY = 'forklift_gh_v2';
 
         document.addEventListener('DOMContentLoaded', () => {
             const saved = localStorage.getItem(STORAGE_KEY);
@@ -161,13 +153,103 @@
             renderAll();
         }
 
-        // Logic
-        function parseDate(s) { if(!s) return null; const p = s.toString().trim().replace(/[^\d/.-]/g, '').replace(/[.-]/g, '/').split('/'); if(p.length!==3) return null; let d=+p[0],m=+p[1],y=+p[2]; if(d>31){y=p[0];d=p[2]} if(y<100) y+=2000; return new Date(y,m-1,d); }
-        function calculateStatus(f) { let min=999; [f.ins,f.safety,f.lic].forEach(s=>{const d=parseDate(s); if(d) min=Math.min(min, Math.ceil((d-new Date().setHours(0,0,0,0))/86400000))}); return {status: min<=0?'urgent':(min<=30?'warning':'ok')}; }
-        
-        function renderAll() {
-            renderStats(); renderTable(); renderCharts();
+        // --- IMPORT CSV FIX ---
+        // חיפוש חכם של עמודות לפי מילות מפתח כדי להתגבר על הבדלי שמות
+        function findColumnValue(row, ...keywords) {
+            const keys = Object.keys(row);
+            // נסה למצוא מפתח שמכיל את אחת ממילות המפתח
+            const foundKey = keys.find(k => keywords.some(word => k.includes(word)));
+            return foundKey ? row[foundKey] : '';
         }
+
+        function importCSV(input) {
+            const file = input.files[0];
+            if(!file) return;
+            
+            Papa.parse(file, {
+                header: true, 
+                skipEmptyLines: true, 
+                encoding: "UTF-8",
+                complete: function(results) {
+                    if (results.data.length === 0) return alert("קובץ ריק");
+                    
+                    const imported = results.data.map((row, idx) => {
+                        // מיפוי חכם לפי העמודות שיש לך בקובץ
+                        return {
+                            id: Date.now() + idx,
+                            num: findColumnValue(row, 'מספר מלגזה', 'num'),
+                            license: findColumnValue(row, 'מספר רישוי', 'license'),
+                            // התיקון הגדול: חיפוש "תאריך תוקף ביטוח" וכו'
+                            ins: findColumnValue(row, 'ביטוח', 'ins'),
+                            safety: findColumnValue(row, 'תסקיר', 'safety', 'מהנדס'),
+                            lic: findColumnValue(row, 'רישוי', 'lic', 'טסט') // יחפש "תאריך תוקף רישוי"
+                        };
+                    }).filter(x => x.num); // מסנן שורות ריקות
+
+                    if(confirm(`נמצאו ${imported.length} שורות. לייבא?`)) {
+                        forklifts = [...forklifts, ...imported];
+                        saveData();
+                        alert("יבוא הושלם בהצלחה!");
+                    }
+                }
+            });
+            input.value = '';
+        }
+
+        // --- DATE PARSING FIX ---
+        // תמיכה גם ב- 2026-06-22 וגם ב- 22/06/2026
+        function parseDate(s) { 
+            if(!s) return null; 
+            const str = s.toString().trim();
+            if(str.length < 5) return null;
+
+            // נסה לפרק לפי מקף או סלאש
+            let parts = str.split(/[-/.]/);
+            if(parts.length !== 3) return null;
+
+            let y, m, d;
+            
+            // זיהוי אם זה YYYY-MM-DD (כמו בקובץ שלך)
+            if (parts[0].length === 4) {
+                y = parseInt(parts[0]);
+                m = parseInt(parts[1]);
+                d = parseInt(parts[2]);
+            } else {
+                // פורמט ישראלי DD/MM/YYYY
+                d = parseInt(parts[0]);
+                m = parseInt(parts[1]);
+                y = parseInt(parts[2]);
+            }
+
+            if(isNaN(y) || isNaN(m) || isNaN(d)) return null;
+            if(y < 100) y += 2000;
+            
+            return new Date(y, m - 1, d);
+        }
+
+        function calculateStatus(f) { 
+            let min = 999; 
+            [f.ins, f.safety, f.lic].forEach(s => {
+                const d = parseDate(s); 
+                if(d) {
+                    const diff = Math.ceil((d - new Date().setHours(0,0,0,0)) / 86400000);
+                    if (diff < min) min = diff;
+                }
+            }); 
+            if(min > 3650) return {status: 'ok'}; // אין תאריכים
+            return {status: min <= 0 ? 'urgent' : (min <= 30 ? 'warning' : 'ok')}; 
+        }
+        
+        // --- RENDER ---
+        function switchTab(id) {
+            document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
+            document.getElementById('tab-'+id).classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active'));
+            event.target.closest('button').classList.add('active');
+            if(id==='dashboard') renderAll();
+        }
+
+        function renderAll() { renderStats(); renderTable(); renderCharts(); }
 
         function renderTable() {
             const tbody = document.getElementById('fleetTableBody');
@@ -206,8 +288,18 @@
             const days = Math.ceil((d - new Date().setHours(0,0,0,0)) / 86400000);
             let cls = days <= 0 ? "badge-danger" : (days <= 30 ? "badge-warning" : "badge-success");
             let txt = days > 0 ? `(עוד ${days})` : "פג תוקף";
-            const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('תזכורת')}&dates=${d.toISOString().slice(0,10).replace(/-/g,'')}/${d.toISOString().slice(0,10).replace(/-/g,'')}`;
-            return `<td class="p-3"><div class="status-badge ${cls}"><div class="flex justify-between w-full"><span class="font-bold text-sm">${d.toLocaleDateString('en-GB')}</span><a href="${calUrl}" target="_blank" class="cal-btn"><i class="far fa-calendar-plus"></i></a></div><span class="days-tag">${txt}</span></div></td>`;
+            // Calendar Link Logic
+            const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+            const gDate = `${y}${m}${day}`;
+            const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('תזכורת מלגזה')}&dates=${gDate}/${gDate}`;
+            
+            return `<td class="p-3"><div class="status-badge ${cls}">
+                <div class="flex justify-between w-full items-center">
+                    <span class="font-bold text-sm">${d.toLocaleDateString('en-GB')}</span>
+                    <a href="${calUrl}" target="_blank" class="cal-btn"><i class="far fa-calendar-plus"></i></a>
+                </div>
+                <span class="days-tag">${txt}</span>
+            </div></td>`;
         }
 
         function renderStats() {
@@ -233,40 +325,18 @@
             Plotly.newPlot('forecastChart', [{ x: x, y: x.map(k=>months[k]), type: 'bar', marker: {color: '#3b82f6'} }], { height: 250, margin: {t:20,b:30,l:30,r:10} });
         }
 
-        // Import/Export
-        function importCSV(input) {
-            const file = input.files[0]; if(!file) return;
-            Papa.parse(file, { header: true, skipEmptyLines: true, encoding: "UTF-8", complete: (res) => {
-                if(confirm(`לייבא ${res.data.length} שורות?`)) {
-                    const imported = res.data.map((r,i) => ({ id: Date.now()+i, num: r['מספר מלגזה']||r['num']||'', license: r['מספר רישוי']||r['license']||'', ins: r['תוקף ביטוח']||r['ins']||'', safety: r['תוקף תסקיר']||r['safety']||'', lic: r['תוקף רישוי']||r['lic']||'' })).filter(x=>x.num);
-                    forklifts = [...forklifts, ...imported]; saveData(); alert("יבוא הושלם!");
-                }
-            }});
-            input.value = '';
-        }
+        // Helpers
+        function toInputDate(s) { const d=parseDate(s); return d?d.toISOString().split('T')[0]:''; }
+        function fromInputDate(s) { if(!s)return ''; const [y,m,d]=s.split('-'); return `${d}/${m}/${y}`; }
         function downloadJSON() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(forklifts)],{type:'application/json'})); a.download='backup.json'; a.click(); }
-        function loadJSON(input) {
-            const f = input.files[0]; if(!f) return;
-            const r = new FileReader(); r.onload = (e) => { try { forklifts = JSON.parse(e.target.result); saveData(); alert("נטען!"); } catch(err) { alert("שגיאה בקובץ"); } }; r.readAsText(f); input.value = '';
-        }
+        function loadJSON(input) { const f = input.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { try { forklifts = JSON.parse(e.target.result); saveData(); alert("נטען!"); } catch(err) { alert("שגיאה בקובץ"); } }; r.readAsText(f); input.value = ''; }
         function clearData() { if(confirm('למחוק הכל?')) { forklifts = []; saveData(); } }
 
-        // UI Helpers
-        window.switchTab = (id) => { document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active')); document.getElementById('tab-'+id).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); event.target.closest('button').classList.add('active'); if(id==='dashboard') renderCharts(); };
         window.openModal = () => { document.getElementById('editModal').classList.remove('hidden'); document.getElementById('editForm').reset(); document.getElementById('editId').value = ''; };
         window.closeModal = () => document.getElementById('editModal').classList.add('hidden');
         window.editItem = (id) => { const f = forklifts.find(x=>x.id===id); document.getElementById('editId').value=f.id; document.getElementById('inpNum').value=f.num; document.getElementById('inpLicense').value=f.license; document.getElementById('inpIns').value=toInputDate(f.ins); document.getElementById('inpSafety').value=toInputDate(f.safety); document.getElementById('inpLic').value=toInputDate(f.lic); document.getElementById('editModal').classList.remove('hidden'); };
         window.deleteItem = (id) => { if(confirm('למחוק?')) { forklifts=forklifts.filter(x=>x.id!==id); saveData(); } };
-        
-        document.getElementById('editForm').onsubmit = (e) => {
-            e.preventDefault(); const id = document.getElementById('editId').value;
-            const item = { id: id?+id:Date.now(), num: document.getElementById('inpNum').value, license: document.getElementById('inpLicense').value, ins: fromInputDate(document.getElementById('inpIns').value), safety: fromInputDate(document.getElementById('inpSafety').value), lic: fromInputDate(document.getElementById('inpLic').value) };
-            if(id) { forklifts[forklifts.findIndex(x=>x.id==id)] = item; } else { forklifts.push(item); }
-            saveData(); closeModal();
-        };
-        
-        function toInputDate(s) { const d=parseDate(s); return d?d.toISOString().split('T')[0]:''; }
-        function fromInputDate(s) { if(!s)return ''; const [y,m,d]=s.split('-'); return `${d}/${m}/${y}`; }
+        document.getElementById('editForm').onsubmit = (e) => { e.preventDefault(); const id = document.getElementById('editId').value; const item = { id: id?+id:Date.now(), num: document.getElementById('inpNum').value, license: document.getElementById('inpLicense').value, ins: fromInputDate(document.getElementById('inpIns').value), safety: fromInputDate(document.getElementById('inpSafety').value), lic: fromInputDate(document.getElementById('inpLic').value) }; if(id) { forklifts[forklifts.findIndex(x=>x.id==id)] = item; } else { forklifts.push(item); } saveData(); closeModal(); };
     </script>
 </body>
 </html>
