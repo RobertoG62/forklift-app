@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forklift Master - Fixed CSV</title>
+    <title>Forklift Master - Final Fix</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
@@ -13,13 +13,13 @@
     
     <style>
         body { font-family: 'Rubik', sans-serif; background: #f8fafc; color: #1e293b; min-height: 100vh; }
+        .forklift-icon { fill: currentColor; display: inline-block; width: 1.4em; height: 1.4em; vertical-align: middle; }
         .tab-btn { padding: 12px 24px; font-weight: 700; color: #64748b; background: transparent; border: none; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s ease; white-space: nowrap; }
         .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; background-color: white; border-radius: 8px 8px 0 0; }
         .tab-content { display: none; animation: fadeIn 0.4s ease-out; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Status Colors */
         tr.row-status-urgent { background-color: #fef2f2 !important; border-right: 4px solid #ef4444 !important; }
         tr.row-status-warning { background-color: #fffbeb !important; border-right: 4px solid #facc15 !important; }
         tr.row-status-ok { background-color: #ffffff !important; border-right: 4px solid #10b981 !important; }
@@ -39,24 +39,25 @@
         <div class="container mx-auto px-4 h-20 flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg p-2">
-                    <i class="fas fa-truck-loading fa-lg"></i>
+                    <svg class="forklift-icon w-full h-full" viewBox="0 0 24 24"><path d="M4 22V2h2v9h4l2-5h5l2 5h1v-2h2v2h1v2h-1v5h-1v2h-1v-2H13c-1.1 0-2 .9-2 2H9v-2H6v2H4zm5-7h8v-3h-2.5l-1-2.5h-3l-1 2.5H9v3z"/></svg>
                 </div>
                 <div>
                     <h1 class="text-2xl font-black tracking-tight">FORKLIFT <span class="text-blue-400">MASTER</span></h1>
-                    <p class="text-xs text-slate-400">Fixed CSV Import</p>
+                    <p class="text-xs text-slate-400">GitHub Edition (Fixed)</p>
                 </div>
             </div>
             <div class="hidden md:flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
-                <span class="text-xs font-bold text-slate-300">גרסה מתוקנת</span>
+                <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span class="text-xs font-bold text-slate-300">מתוקן</span>
             </div>
         </div>
     </header>
 
     <div class="container mx-auto px-4 py-8 max-w-7xl">
         <div class="flex gap-2 border-b border-slate-300/50 mb-6 overflow-x-auto">
-            <button class="tab-btn active" onclick="switchTab('dashboard')">דשבורד</button>
-            <button class="tab-btn" onclick="switchTab('fleet')">טבלת מלגזות</button>
-            <button class="tab-btn" onclick="switchTab('settings')">הגדרות</button>
+            <button class="tab-btn active" onclick="switchTab('dashboard')"><i class="fas fa-chart-pie"></i> דשבורד</button>
+            <button class="tab-btn" onclick="switchTab('fleet')"><i class="fas fa-list"></i> טבלת מלגזות</button>
+            <button class="tab-btn" onclick="switchTab('settings')"><i class="fas fa-cog"></i> הגדרות</button>
         </div>
 
         <div id="tab-dashboard" class="tab-content active">
@@ -77,10 +78,15 @@
                 <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-wrap justify-between items-center gap-4">
                     <h2 class="text-lg font-bold text-slate-800">רשימת ציוד</h2>
                     <div class="flex flex-wrap gap-2 items-center">
-                        <input type="text" id="searchBox" onkeyup="renderTable()" placeholder="חיפוש חופשי..." class="px-3 py-2 border rounded-lg text-sm w-40 outline-none">
-                        <select id="statusFilter" onchange="renderTable()" class="px-3 py-2 border rounded-lg text-sm bg-white cursor-pointer"><option value="all">הכל</option><option value="urgent">🔴 פג תוקף</option><option value="warning">🟠 מתקרב</option><option value="ok">🟢 תקין</option></select>
+                        <input type="text" id="searchBox" onkeyup="renderTable()" placeholder="חיפוש חופשי..." class="px-3 py-2 border rounded-lg text-sm w-40 focus:ring-2 focus:ring-blue-500 outline-none">
+                        <select id="statusFilter" onchange="renderTable()" class="px-3 py-2 border rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none bg-white cursor-pointer">
+                            <option value="all">הכל</option>
+                            <option value="urgent">🔴 פג תוקף</option>
+                            <option value="warning">🟠 מתקרב</option>
+                            <option value="ok">🟢 תקין</option>
+                        </select>
                         <label class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-bold cursor-pointer flex items-center gap-2 shadow-sm transition">
-                            <i class="fas fa-file-csv"></i> טען CSV מתוקן
+                            <i class="fas fa-file-csv"></i> יבוא CSV
                             <input type="file" id="csvImportInput" class="hidden" accept=".csv" onchange="importCSV(this)">
                         </label>
                         <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-sm transition"><i class="fas fa-plus"></i> חדש</button>
@@ -105,11 +111,14 @@
             <div class="max-w-xl mx-auto space-y-6">
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                     <h3 class="font-bold text-lg mb-4">ניהול נתונים</h3>
+                    <div class="bg-blue-50 p-4 rounded-lg text-sm text-blue-800 mb-6 border border-blue-200">
+                        <i class="fas fa-info-circle"></i> הנתונים נשמרים בדפדפן (localStorage).
+                    </div>
                     <div class="flex gap-2">
-                        <button onclick="downloadJSON()" class="flex-1 bg-slate-800 text-white py-3 rounded-lg font-bold"><i class="fas fa-download"></i> הורד גיבוי</button>
-                        <button onclick="document.getElementById('jsonInput').click()" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold"><i class="fas fa-upload"></i> טען גיבוי</button>
+                        <button onclick="downloadJSON()" class="flex-1 bg-slate-800 text-white py-3 rounded-lg font-bold hover:bg-slate-700"><i class="fas fa-download"></i> הורד גיבוי</button>
+                        <button onclick="document.getElementById('jsonInput').click()" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700"><i class="fas fa-upload"></i> טען גיבוי</button>
                         <input type="file" id="jsonInput" class="hidden" accept=".json" onchange="loadJSON(this)">
-                        <button onclick="clearData()" class="flex-1 bg-red-100 text-red-600 py-3 rounded-lg font-bold"><i class="fas fa-trash"></i> איפוס</button>
+                        <button onclick="clearData()" class="flex-1 bg-red-100 text-red-600 py-3 rounded-lg font-bold hover:bg-red-200"><i class="fas fa-trash"></i> אפס הכל</button>
                     </div>
                 </div>
             </div>
@@ -123,7 +132,7 @@
                 <input type="hidden" id="editId">
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-xs font-bold text-slate-500">מספר מלגזה</label><input type="text" id="inpNum" class="w-full border p-2 rounded" required></div>
-                    <div><label class="block text-xs font-bold text-blue-600">רישוי</label><input type="text" id="inpLicense" class="w-full border p-2 rounded"></div>
+                    <div><label class="block text-xs font-bold text-blue-600">מספר רישוי</label><input type="text" id="inpLicense" class="w-full border p-2 rounded"></div>
                 </div>
                 <div class="grid grid-cols-3 gap-2">
                     <div><label class="block text-xs font-bold text-slate-500">ביטוח</label><input type="date" id="inpIns" class="w-full border p-2 rounded"></div>
@@ -140,7 +149,7 @@
 
     <script>
         let forklifts = [];
-        const STORAGE_KEY = 'forklift_gh_v2';
+        const STORAGE_KEY = 'forklift_gh_v3_fixed';
 
         document.addEventListener('DOMContentLoaded', () => {
             const saved = localStorage.getItem(STORAGE_KEY);
@@ -153,12 +162,20 @@
             renderAll();
         }
 
-        // --- IMPORT CSV FIX ---
-        // חיפוש חכם של עמודות לפי מילות מפתח כדי להתגבר על הבדלי שמות
-        function findColumnValue(row, ...keywords) {
+        // --- IMPORT CSV LOGIC (THE FIX) ---
+        // פונקציה חכמה שמוודאת התאמה מדויקת או מכילה כדי למנוע בלבול
+        function findColumnValue(row, exactMatch, ...fallbacks) {
             const keys = Object.keys(row);
-            // נסה למצוא מפתח שמכיל את אחת ממילות המפתח
-            const foundKey = keys.find(k => keywords.some(word => k.includes(word)));
+            
+            // 1. נסה למצוא התאמה מדויקת (עדיפות עליונה)
+            // לדוגמה: אם מחפשים "מספר רישוי", זה ימצא בול, ולא יתבלבל עם "תאריך רישוי"
+            let foundKey = keys.find(k => k.trim() === exactMatch);
+            
+            // 2. אם לא מצא, נסה מילות מפתח נוספות (אבל בזהירות)
+            if (!foundKey && fallbacks.length > 0) {
+                foundKey = keys.find(k => fallbacks.some(word => k.includes(word)));
+            }
+            
             return foundKey ? row[foundKey] : '';
         }
 
@@ -174,17 +191,22 @@
                     if (results.data.length === 0) return alert("קובץ ריק");
                     
                     const imported = results.data.map((row, idx) => {
-                        // מיפוי חכם לפי העמודות שיש לך בקובץ
                         return {
                             id: Date.now() + idx,
+                            // מיפוי מדויק לפי הקובץ שלך
                             num: findColumnValue(row, 'מספר מלגזה', 'num'),
+                            
+                            // כאן התיקון: חפש במפורש "מספר רישוי"
                             license: findColumnValue(row, 'מספר רישוי', 'license'),
-                            // התיקון הגדול: חיפוש "תאריך תוקף ביטוח" וכו'
-                            ins: findColumnValue(row, 'ביטוח', 'ins'),
-                            safety: findColumnValue(row, 'תסקיר', 'safety', 'מהנדס'),
-                            lic: findColumnValue(row, 'רישוי', 'lic', 'טסט') // יחפש "תאריך תוקף רישוי"
+                            
+                            // תאריכים: חפש "תוקף ביטוח" וכו'
+                            ins: findColumnValue(row, 'תאריך תוקף ביטוח', 'ביטוח', 'ins'),
+                            safety: findColumnValue(row, 'תאריך תוקף תסקיר', 'תסקיר', 'safety'),
+                            
+                            // כאן התיקון הקריטי לתאריך הרישוי: חפש "תוקף רישוי" ולא סתם "רישוי"
+                            lic: findColumnValue(row, 'תאריך תוקף רישוי', 'תוקף רישוי', 'טסט') 
                         };
-                    }).filter(x => x.num); // מסנן שורות ריקות
+                    }).filter(x => x.num);
 
                     if(confirm(`נמצאו ${imported.length} שורות. לייבא?`)) {
                         forklifts = [...forklifts, ...imported];
@@ -197,33 +219,19 @@
         }
 
         // --- DATE PARSING FIX ---
-        // תמיכה גם ב- 2026-06-22 וגם ב- 22/06/2026
         function parseDate(s) { 
             if(!s) return null; 
             const str = s.toString().trim();
             if(str.length < 5) return null;
-
-            // נסה לפרק לפי מקף או סלאש
             let parts = str.split(/[-/.]/);
             if(parts.length !== 3) return null;
-
             let y, m, d;
-            
-            // זיהוי אם זה YYYY-MM-DD (כמו בקובץ שלך)
-            if (parts[0].length === 4) {
-                y = parseInt(parts[0]);
-                m = parseInt(parts[1]);
-                d = parseInt(parts[2]);
-            } else {
-                // פורמט ישראלי DD/MM/YYYY
-                d = parseInt(parts[0]);
-                m = parseInt(parts[1]);
-                y = parseInt(parts[2]);
-            }
-
+            // YYYY-MM-DD
+            if (parts[0].length === 4) { y = parseInt(parts[0]); m = parseInt(parts[1]); d = parseInt(parts[2]); } 
+            // DD/MM/YYYY
+            else { d = parseInt(parts[0]); m = parseInt(parts[1]); y = parseInt(parts[2]); }
             if(isNaN(y) || isNaN(m) || isNaN(d)) return null;
             if(y < 100) y += 2000;
-            
             return new Date(y, m - 1, d);
         }
 
@@ -236,7 +244,7 @@
                     if (diff < min) min = diff;
                 }
             }); 
-            if(min > 3650) return {status: 'ok'}; // אין תאריכים
+            if(min > 3650) return {status: 'ok'}; 
             return {status: min <= 0 ? 'urgent' : (min <= 30 ? 'warning' : 'ok')}; 
         }
         
@@ -288,18 +296,10 @@
             const days = Math.ceil((d - new Date().setHours(0,0,0,0)) / 86400000);
             let cls = days <= 0 ? "badge-danger" : (days <= 30 ? "badge-warning" : "badge-success");
             let txt = days > 0 ? `(עוד ${days})` : "פג תוקף";
-            // Calendar Link Logic
             const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
             const gDate = `${y}${m}${day}`;
             const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('תזכורת מלגזה')}&dates=${gDate}/${gDate}`;
-            
-            return `<td class="p-3"><div class="status-badge ${cls}">
-                <div class="flex justify-between w-full items-center">
-                    <span class="font-bold text-sm">${d.toLocaleDateString('en-GB')}</span>
-                    <a href="${calUrl}" target="_blank" class="cal-btn"><i class="far fa-calendar-plus"></i></a>
-                </div>
-                <span class="days-tag">${txt}</span>
-            </div></td>`;
+            return `<td class="p-3"><div class="status-badge ${cls}"><div class="flex justify-between w-full"><span class="font-bold text-sm">${d.toLocaleDateString('en-GB')}</span><a href="${calUrl}" target="_blank" class="cal-btn"><i class="far fa-calendar-plus"></i></a></div><span class="days-tag">${txt}</span></div></td>`;
         }
 
         function renderStats() {
@@ -316,7 +316,6 @@
             const c = { urgent: 0, warning: 0, ok: 0 };
             forklifts.forEach(f => c[calculateStatus(f).status]++);
             Plotly.newPlot('statusChart', [{ values: [c.urgent, c.warning, c.ok], labels: ['פג תוקף', 'מתקרב', 'תקין'], type: 'pie', marker: { colors: ['#ef4444', '#facc15', '#10b981'] }, hole: 0.5 }], { height: 250, margin: {t:0,b:0,l:0,r:0} });
-            
             const months = {};
             forklifts.forEach(f => [f.ins, f.safety, f.lic].forEach(ds => {
                 const d = parseDate(ds); if(d && d > new Date()) months[`${d.getMonth()+1}/${d.getFullYear()}`] = (months[`${d.getMonth()+1}/${d.getFullYear()}`]||0)+1;
