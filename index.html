@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forklift Master - Final Fix</title>
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- All served from this site. Charting, CSV parsing, icons, fonts and the
+         stylesheet used to come from four third parties on every load. This
+         tool holds the plant's forklift records, so even the request pattern
+         said when someone was working on the fleet. -->
+    <link rel="stylesheet" href="assets/css/tailwind.css">
+    <link rel="stylesheet" href="assets/fonts/fonts.css">
+    <link rel="stylesheet" href="assets/vendor/fontawesome/fontawesome.min.css">
+    <script src="vendor/plotly.min.js"></script>
+    <script src="vendor/papaparse.min.js"></script>
     
     <style>
         body { font-family: 'Rubik', sans-serif; background: #f8fafc; color: #1e293b; min-height: 100vh; }
@@ -34,6 +38,7 @@
     </style>
 </head>
 <body class="pb-12">
+<main>
 
     <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
         <div class="container mx-auto px-4 h-20 flex items-center justify-between">
@@ -62,13 +67,13 @@
 
         <div id="tab-dashboard" class="tab-content active">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white p-5 rounded-xl shadow-sm border-t-4 border-blue-500"><div><p class="text-xs font-bold text-slate-500 uppercase">סה"כ צי</p><h3 class="text-3xl font-black text-slate-800" id="kpiTotal">0</h3></div></div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border-t-4 border-red-500"><p class="text-xs font-bold text-slate-500 uppercase">פג תוקף</p><h3 class="text-3xl font-black text-red-600" id="kpiUrgent">0</h3></div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border-t-4 border-yellow-400"><p class="text-xs font-bold text-slate-500 uppercase">מתקרב (30 יום)</p><h3 class="text-3xl font-black text-yellow-600" id="kpiWarning">0</h3></div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border-t-4 border-green-500"><p class="text-xs font-bold text-slate-500 uppercase">תקין</p><h3 class="text-3xl font-black text-green-600" id="kpiOk">0</h3></div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border-t-4 border-blue-500"><div><p class="text-xs font-bold text-slate-500 uppercase">סה"כ צי</p><p class="text-3xl font-black text-slate-800" id="kpiTotal">0</p></div></div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border-t-4 border-red-500"><p class="text-xs font-bold text-slate-500 uppercase">פג תוקף</p><p class="text-3xl font-black text-red-600" id="kpiUrgent">0</p></div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border-t-4 border-yellow-400"><p class="text-xs font-bold text-slate-500 uppercase">מתקרב (30 יום)</p><p class="text-3xl font-black text-yellow-600" id="kpiWarning">0</p></div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border-t-4 border-green-500"><p class="text-xs font-bold text-slate-500 uppercase">תקין</p><p class="text-3xl font-black text-green-600" id="kpiOk">0</p></div>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200"><h3 class="font-bold text-slate-700 mb-4">סטטוס כללי</h3><div id="statusChart" class="h-64"></div></div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200"><h2 class="font-bold text-slate-700 mb-4">סטטוס כללי</h2><div id="statusChart" class="h-64"></div></div>
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200"><h3 class="font-bold text-slate-700 mb-4">צפי פקיעת תוקף</h3><div id="forecastChart" class="h-64"></div></div>
             </div>
         </div>
@@ -337,5 +342,11 @@
         window.deleteItem = (id) => { if(confirm('למחוק?')) { forklifts=forklifts.filter(x=>x.id!==id); saveData(); } };
         document.getElementById('editForm').onsubmit = (e) => { e.preventDefault(); const id = document.getElementById('editId').value; const item = { id: id?+id:Date.now(), num: document.getElementById('inpNum').value, license: document.getElementById('inpLicense').value, ins: fromInputDate(document.getElementById('inpIns').value), safety: fromInputDate(document.getElementById('inpSafety').value), lic: fromInputDate(document.getElementById('inpLic').value) }; if(id) { forklifts[forklifts.findIndex(x=>x.id==id)] = item; } else { forklifts.push(item); } saveData(); closeModal(); };
     </script>
+</main>
+<footer class="policy-links">
+  <p><b>הנתונים נשמרים בדפדפן שלך בלבד ואינם נשלחים לשום מקום. ייצא ל-CSV באופן קבוע — אין גיבוי אחר.</b></p>
+  <p><a href="privacy.html">מדיניות פרטיות</a> · <a href="terms.html">תנאי שימוש</a> · <a href="accessibility.html">הצהרת נגישות</a></p>
+</footer>
+<style>.policy-links{padding:20px 18px 26px;text-align:center;font-size:.8rem;line-height:1.85;color:#475569;background:#f8fafc;border-top:1px solid #cbd5e1}.policy-links p{margin:0 0 5px;max-width:70ch;margin-inline:auto}.policy-links a{color:#1d4ed8;text-decoration:underline}</style>
 </body>
 </html>
