@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>חילוץ נתוני מלגזות</title>
+<style>
+  body{font-family:system-ui,'Segoe UI',Arial,sans-serif;background:#f1f5f9;color:#1e293b;
+       margin:0;padding:32px 20px;line-height:1.75}
+  .box{max-width:720px;margin:0 auto;background:#fff;border:1px solid #cbd5e1;
+       border-radius:14px;padding:28px 26px;box-shadow:0 10px 30px rgba(15,23,42,.08)}
+  h1{margin:0 0 6px;font-size:1.5rem}
+  .sub{color:#475569;margin:0 0 22px}
+  .status{padding:14px 16px;border-radius:10px;margin:18px 0;font-weight:600}
+  .ok{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46}
+  .none{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+  button{font-family:inherit;font-size:1rem;font-weight:700;padding:12px 20px;border:none;
+         border-radius:9px;background:#2563eb;color:#fff;cursor:pointer;margin-inline-end:8px}
+  button:hover{background:#1d4ed8}
+  button.ghost{background:#e2e8f0;color:#1e293b}
+  pre{background:#0f172a;color:#e2e8f0;padding:14px;border-radius:9px;overflow:auto;
+      max-height:260px;font-size:.8rem;direction:ltr;text-align:left}
+  ol{padding-inline-start:22px}
+  .note{font-size:.9rem;color:#475569;border-top:1px solid #e2e8f0;margin-top:22px;padding-top:16px}
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>חילוץ נתוני המלגזות</h1>
+  <p class="sub">הדף הזה קורא את הנתונים ששמורים בדפדפן שלך מהגרסה הקודמת, ומאפשר להוריד אותם לקובץ.</p>
+
+  <div id="status" class="status">בודק...</div>
+
+  <div id="actions" hidden>
+    <button onclick="download()">⬇️ הורד קובץ גיבוי</button>
+    <button class="ghost" onclick="copyIt()">📋 העתק ללוח</button>
+  </div>
+
+  <pre id="preview" hidden></pre>
+
+  <div class="note">
+    <b>אחרי ההורדה:</b>
+    <ol>
+      <li>חזור ל<a href="index.html">מערכת</a> והתחבר עם הדוא"ל הארגוני.</li>
+      <li>לשונית <b>ניהול נתונים</b> ← <b>טען גיבוי</b> ← בחר את הקובץ שהורדת.</li>
+      <li>הנתונים יעלו לענן ויופיעו גם למשתמש השני.</li>
+    </ol>
+    <b>הנתונים בדפדפן אינם נמחקים</b> על ידי הדף הזה — הוא רק קורא אותם.
+  </div>
+</div>
+
+<script>
+  // The old app stored the fleet under this key. Same origin, so the data is
+  // still here even though the new UI no longer reads it.
+  var KEY = 'forklift_gh_v3_fixed';
+  var raw = null;
+  try { raw = localStorage.getItem(KEY); } catch (e) {}
+
+  // Older builds may have used a different key - look for anything that parses
+  // as an array of records with a forklift number.
+  if (!raw) {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        var v = localStorage.getItem(k);
+        if (!v || v[0] !== '[') continue;
+        var a = JSON.parse(v);
+        if (Array.isArray(a) && a.length && (a[0].num !== undefined || a[0].license !== undefined)) {
+          raw = v; KEY = k; break;
+        }
+      }
+    } catch (e) {}
+  }
+
+  var st = document.getElementById('status');
+  if (raw) {
+    var arr = [];
+    try { arr = JSON.parse(raw); } catch (e) {}
+    st.className = 'status ok';
+    st.textContent = '✅ נמצאו ' + arr.length + ' רשומות (מפתח: ' + KEY + ')';
+    document.getElementById('actions').hidden = false;
+    var pv = document.getElementById('preview');
+    pv.hidden = false;
+    pv.textContent = JSON.stringify(arr, null, 2).slice(0, 4000);
+  } else {
+    st.className = 'status none';
+    st.textContent = '❌ לא נמצאו נתונים בדפדפן הזה. ייתכן שהם שמורים בדפדפן או במכשיר אחר — פתח שם את הדף הזה.';
+  }
+
+  function download() {
+    var blob = new Blob([raw], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'forklift-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+  function copyIt() {
+    navigator.clipboard.writeText(raw).then(function () { alert('הועתק ללוח'); });
+  }
+</script>
+</body>
+</html>
