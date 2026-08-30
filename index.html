@@ -36,8 +36,77 @@
         .cal-btn { font-size: 0.7rem; margin-top: 4px; padding: 2px 6px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
         .days-tag { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
     </style>
+    <style>
+      /* auth gate */
+      .auth-gate{position:fixed;inset:0;z-index:2000;display:flex;align-items:center;
+        justify-content:center;padding:20px;background:#f1f5f9}
+      .auth-gate[hidden]{display:none}
+      .auth-card{width:100%;max-width:430px;padding:36px 30px;text-align:center;background:#fff;
+        border:1px solid #cbd5e1;border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,.08)}
+      .auth-title{margin:0 0 14px;font-size:1.5rem;font-weight:800;color:#1e293b}
+      .auth-text{margin:0 0 20px;font-size:.95rem;line-height:1.7;color:#475569}
+      .auth-denied{margin:0 0 12px;font-size:1rem;color:#b91c1c}
+      .auth-field{margin-bottom:14px;text-align:right}
+      .auth-field label{display:block;margin-bottom:6px;font-size:.85rem;color:#475569}
+      .auth-field input{width:100%;padding:11px 14px;font-family:inherit;font-size:.95rem;
+        color:#1e293b;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;
+        direction:ltr;text-align:left}
+      .auth-field input:focus{outline:none;border-color:#2563eb}
+      .auth-error{margin:0 0 14px;padding:10px 12px;font-size:.88rem;line-height:1.5;color:#b91c1c;
+        background:#fef2f2;border:1px solid #fecaca;border-radius:8px;text-align:right}
+      .auth-error[hidden]{display:none}
+      .auth-btn{width:100%;padding:11px;font-family:inherit;font-size:.95rem;font-weight:700;
+        color:#fff;background:#2563eb;border:none;border-radius:8px;cursor:pointer}
+      .auth-btn:hover{background:#1d4ed8}
+      .auth-btn-ghost{color:#1e293b;background:#e2e8f0}
+      .auth-btn-ghost:hover{background:#cbd5e1}
+      .auth-link{margin-top:14px;padding:4px;font-family:inherit;font-size:.85rem;color:#475569;
+        background:none;border:none;cursor:pointer;text-decoration:underline}
+      .user-chip{display:inline-flex;align-items:center;gap:10px;font-size:.8rem;color:#475569}
+      .user-chip[hidden]{display:none}
+      .btn-signout{padding:4px 12px;font-size:.78rem;border:1px solid #cbd5e1;border-radius:6px;
+        background:#fff;cursor:pointer;font-family:inherit}
+    </style>
 </head>
 <body class="pb-12">
+
+  <!-- ===== AUTH GATE ===== -->
+  <!-- Who may enter is decided in firestore.rules, not here. This page holds no
+       copy of the list: it tries to read, and shows "not authorised" when the
+       database refuses. -->
+  <div id="auth-gate" class="auth-gate">
+    <div class="auth-card">
+      <h1 class="auth-title">מעקב אישורי מלגזות</h1>
+
+      <div id="gate-signin">
+        <p class="auth-text">המערכת מכילה את נתוני צי המלגזות של המפעל. הגישה מוגבלת למורשים — התחבר עם כתובת הדוא"ל הארגונית שלך.</p>
+        <form id="signin-form" novalidate>
+          <div class="auth-field">
+            <label for="auth-email">דוא"ל ארגוני</label>
+            <input type="email" id="auth-email" autocomplete="username" placeholder="name@salt.co.il" required />
+          </div>
+          <div class="auth-field">
+            <label for="auth-password">סיסמה</label>
+            <input type="password" id="auth-password" autocomplete="current-password" required />
+          </div>
+          <p class="auth-error" id="auth-error" hidden></p>
+          <button type="submit" class="auth-btn" id="btn-signin">התחבר</button>
+        </form>
+        <button type="button" class="auth-link" id="btn-reset">שכחתי סיסמה</button>
+      </div>
+
+      <div id="gate-busy" hidden>
+        <p class="auth-text">מתחבר...</p>
+      </div>
+
+      <div id="gate-denied" hidden>
+        <p class="auth-denied">לחשבון <b id="denied-email"></b> אין הרשאה למערכת.</p>
+        <p class="auth-text">אם אתה אמור לקבל גישה, פנה למנהל המערכת כדי שיוסיף את כתובתך לרשימת המורשים.</p>
+        <button type="button" class="auth-btn auth-btn-ghost" data-signout>התחבר עם חשבון אחר</button>
+      </div>
+    </div>
+  </div>
+
 <main>
 
     <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
@@ -56,6 +125,7 @@
                 <span class="text-xs font-bold text-slate-300">מתוקן</span>
             </div>
         </div>
+          <span class="user-chip" id="user-chip" hidden><span id="user-email"></span><button class="btn-signout" data-signout type="button">התנתק</button></span>
     </header>
 
     <div class="container mx-auto px-4 py-8 max-w-7xl">
@@ -117,7 +187,7 @@
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                     <h3 class="font-bold text-lg mb-4">ניהול נתונים</h3>
                     <div class="bg-blue-50 p-4 rounded-lg text-sm text-blue-800 mb-6 border border-blue-200">
-                        <i class="fas fa-info-circle"></i> הנתונים נשמרים בדפדפן (localStorage).
+                        <i class="fas fa-info-circle"></i> הנתונים נשמרים בענן ומשותפים לכל המורשים.
                     </div>
                     <div class="flex gap-2">
                         <button onclick="downloadJSON()" class="flex-1 bg-slate-800 text-white py-3 rounded-lg font-bold hover:bg-slate-700"><i class="fas fa-download"></i> הורד גיבוי</button>
@@ -154,17 +224,72 @@
 
     <script>
         let forklifts = [];
-        const STORAGE_KEY = 'forklift_gh_v3_fixed';
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if(saved) forklifts = JSON.parse(saved);
-            renderAll();
-        });
+        // The fleet lives in Firestore, one document per forklift, so two people
+        // can work at once and each sees the other's changes immediately. It used
+        // to sit in localStorage, which meant every browser held a different fleet
+        // and none of them was the real one.
+        //
+        // The rest of this file is unchanged: it still reads and writes the
+        // `forklifts` array and calls saveData(). Only saveData() differs - it
+        // works out what changed against what the database last sent us and
+        // writes just that.
+        let _lastKnown = new Map();   // id -> JSON of the record as stored
+        let _writing = false;
 
-        function saveData() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(forklifts));
-            renderAll();
+        window.startFleetSync = function () {
+            const { db, collection, onSnapshot } = window._fb;
+            onSnapshot(collection(db, 'forklifts'), (snap) => {
+                if (_writing) return;              // our own write echoing back
+                forklifts = [];
+                _lastKnown = new Map();
+                snap.forEach(d => {
+                    const rec = { ...d.data(), id: d.data().id ?? d.id, _doc: d.id };
+                    forklifts.push(rec);
+                    _lastKnown.set(d.id, JSON.stringify(stripLocal(rec)));
+                });
+                renderAll();
+            }, (err) => {
+                console.error('fleet read failed:', err.code);
+                if (err.code === 'permission-denied' || err.code === 'unauthenticated') {
+                    if (typeof window._onAuthDenied === 'function') window._onAuthDenied();
+                }
+            });
+        };
+
+        function stripLocal(rec) {
+            const { _doc, ...rest } = rec;
+            return rest;
+        }
+
+        async function saveData() {
+            renderAll();                            // keep the UI immediate
+            const { db, collection, doc, setDoc, deleteDoc } = window._fb;
+            _writing = true;
+            try {
+                const seen = new Set();
+                for (const rec of forklifts) {
+                    const key = String(rec._doc || rec.id);
+                    seen.add(key);
+                    const body = JSON.stringify(stripLocal({ ...rec, _doc: undefined }));
+                    if (_lastKnown.get(key) !== body) {
+                        await setDoc(doc(db, 'forklifts', key), stripLocal({ ...rec, _doc: undefined }));
+                        _lastKnown.set(key, body);
+                    }
+                    rec._doc = key;
+                }
+                for (const key of Array.from(_lastKnown.keys())) {
+                    if (!seen.has(key)) {
+                        await deleteDoc(doc(db, 'forklifts', key));
+                        _lastKnown.delete(key);
+                    }
+                }
+            } catch (err) {
+                console.error('fleet write failed:', err);
+                alert('השמירה נכשלה. בדוק את החיבור ונסה שוב.');
+            } finally {
+                _writing = false;
+            }
         }
 
         // --- IMPORT CSV LOGIC (THE FIX) ---
@@ -348,5 +473,116 @@
   <p><a href="privacy.html">מדיניות פרטיות</a> · <a href="terms.html">תנאי שימוש</a> · <a href="accessibility.html">הצהרת נגישות</a></p>
 </footer>
 <style>.policy-links{padding:20px 18px 26px;text-align:center;font-size:.8rem;line-height:1.85;color:#475569;background:#f8fafc;border-top:1px solid #cbd5e1}.policy-links p{margin:0 0 5px;max-width:70ch;margin-inline:auto}.policy-links a{color:#1d4ed8;text-decoration:underline}</style>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  // Same Firebase project as the permit tracker, different collection. Reusing it
+  // means the plant has one set of accounts rather than two, and the rules keep
+  // the two collections separate with their own allowlists.
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0nJWBaK2LMlsMOEOPeNu6RQNYzHJl5CY",
+    authDomain: "permit-tracker-app.firebaseapp.com",
+    projectId: "permit-tracker-app",
+    storageBucket: "permit-tracker-app.firebasestorage.app",
+    messagingSenderId: "716690390973",
+    appId: "1:716690390973:web:a95396345321e163f21cd4"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const db   = getFirestore(app);
+  const auth = getAuth(app);
+  window._fb = { db, collection, doc, setDoc, deleteDoc, onSnapshot };
+
+  const gate = document.getElementById('auth-gate');
+  const panels = {
+    signin: document.getElementById('gate-signin'),
+    busy:   document.getElementById('gate-busy'),
+    denied: document.getElementById('gate-denied')
+  };
+  const errBox = document.getElementById('auth-error');
+
+  function showGate(which) {
+    gate.hidden = false;
+    for (const [name, el] of Object.entries(panels)) el.hidden = (name !== which);
+  }
+  function showError(msg) { errBox.textContent = msg; errBox.hidden = false; }
+
+  // Deliberately vague about which half was wrong - naming it would reveal
+  // which addresses exist.
+  function messageFor(code) {
+    switch (code) {
+      case 'auth/invalid-credential':
+      case 'auth/wrong-password':
+      case 'auth/user-not-found':      return 'דוא"ל או סיסמה שגויים.';
+      case 'auth/invalid-email':       return 'כתובת הדוא"ל אינה תקינה.';
+      case 'auth/user-disabled':       return 'החשבון הזה הושבת. פנה למנהל המערכת.';
+      case 'auth/too-many-requests':   return 'יותר מדי ניסיונות. המתן כמה דקות ונסה שוב.';
+      case 'auth/network-request-failed': return 'אין חיבור לרשת. בדוק את החיבור ונסה שוב.';
+      default: return 'ההתחברות נכשלה. נסה שוב, ואם הבעיה חוזרת פנה למנהל המערכת.';
+    }
+  }
+
+  document.getElementById('signin-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errBox.hidden = true;
+    const email = document.getElementById('auth-email').value.trim();
+    const pass  = document.getElementById('auth-password').value;
+    if (!email || !pass) { showError('יש למלא דוא"ל וסיסמה.'); return; }
+    showGate('busy');
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch (err) {
+      console.error('sign-in failed:', err.code);
+      showGate('signin');
+      showError(messageFor(err.code));
+    }
+  });
+
+  document.getElementById('btn-reset').addEventListener('click', async () => {
+    const email = document.getElementById('auth-email').value.trim();
+    if (!email) { showError('הקלד את כתובת הדוא"ל שלך ואז לחץ שוב.'); return; }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      // Same message either way, so it cannot be used to discover addresses.
+      showError('אם קיים חשבון לכתובת הזו, נשלח אליה קישור לאיפוס סיסמה.');
+    } catch (err) {
+      console.error('reset failed:', err.code);
+      showError(messageFor(err.code));
+    }
+  });
+
+  document.querySelectorAll('[data-signout]').forEach(b =>
+    b.addEventListener('click', () => signOut(auth)));
+
+  // Called from the fleet listener when Firestore refuses the read - which is how
+  // an account that is not on the allowlist finds out.
+  window._onAuthDenied = () => {
+    const u = auth.currentUser;
+    document.getElementById('denied-email').textContent = u ? u.email : '';
+    const chip = document.getElementById('user-chip');
+    if (chip) chip.hidden = true;
+    showGate('denied');
+  };
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      const chip = document.getElementById('user-chip');
+      if (chip) chip.hidden = true;
+      document.getElementById('auth-password').value = '';
+      showGate('signin');
+      return;
+    }
+    const chip = document.getElementById('user-chip');
+    const mail = document.getElementById('user-email');
+    if (mail) mail.textContent = user.email;
+    if (chip) chip.hidden = false;
+    gate.hidden = true;
+    if (typeof window.startFleetSync === 'function') window.startFleetSync();
+  });
+</script>
 </body>
 </html>
